@@ -1,0 +1,99 @@
+class UI {
+    // Draw level selection screen
+    function void drawLevelSelection() {
+        do Screen.clearScreen();
+        
+        // Draw title
+        do Output.moveCursor(3, 22);
+        do Output.printString("MEMORY GAME");
+        do Output.moveCursor(4, 20);
+        do Output.printString("Two Player Edition");
+        
+        // Draw level options
+        do Output.moveCursor(7, 15);
+        do Output.printString("Select a level to play:");
+        
+        do Output.moveCursor(10, 15);
+        do Output.printString("1. Level 1 (2x4 grid - 4 pairs)");
+        
+        do Output.moveCursor(12, 15);
+        do Output.printString("2. Level 2 (3x4 grid - 6 pairs)");
+        
+        do Output.moveCursor(14, 15);
+        do Output.printString("3. Level 3 (4x4 grid - 8 pairs)");
+        
+        do Output.moveCursor(18, 15);
+        do Output.printString("Press 1, 2, or 3 to select a level");
+        do Output.moveCursor(19, 15);
+        do Output.printString("Press ESC to exit");
+        
+        return;
+    }
+    
+    // Draw the game UI including score for two players
+    function void drawTwoPlayerGameUI(int score1, int score2, int totalPairs, int currentPlayer) {
+        // Draw scores
+        do Output.moveCursor(1, 2);
+        do Output.printString("Player 1 Score: ");
+        do Output.printInt(score1);
+        
+        do Output.moveCursor(1, 40);
+        do Output.printString("Player 2 Score: ");
+        do Output.printInt(score2);
+        
+        do Output.moveCursor(2, 2);
+        do Output.printString("Total Pairs: ");
+        do Output.printInt(totalPairs);
+        
+        do Output.moveCursor(2, 40);
+        do Output.printString("Current Player: ");
+        do Output.printInt(currentPlayer);
+        
+        return;
+    }
+    
+    // Draw victory screen for two players
+    function void drawGameOverScreen(int score1, int score2) {
+        var int i;
+        var String winner;
+        
+        // Clear middle portion of screen for game over message
+        do Screen.setColor(false);
+        do Screen.drawRectangle(80, 80, 400, 250);
+        do Screen.setColor(true);
+        do Screen.drawRectangle(80, 80, 400, 250);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(82, 82, 398, 248);
+        do Screen.setColor(true);
+        
+        do Output.moveCursor(8, 25);
+        do Output.printString("GAME OVER!");
+        
+        do Output.moveCursor(10, 17);
+        do Output.printString("Final Scores:");
+        
+        do Output.moveCursor(12, 17);
+        do Output.printString("Player 1: ");
+        do Output.printInt(score1);
+        
+        do Output.moveCursor(13, 17);
+        do Output.printString("Player 2: ");
+        do Output.printInt(score2);
+        
+        do Output.moveCursor(15, 17);
+        if (score1 > score2) {
+            do Output.printString("Player 1 wins!");
+        } else {
+            if (score2 > score1) {
+                do Output.printString("Player 2 wins!");
+            } else {
+                do Output.printString("It's a tie!");
+            }
+        }
+        
+        do Output.moveCursor(18, 17);
+        do Output.printString("Press any key to exit");
+        
+        return;
+    }
+}

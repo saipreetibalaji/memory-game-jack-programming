@@ -1,0 +1,208 @@
+class Board {
+    field Array cards;
+    field int width, height;
+    field int level;
+    
+    // Constructor
+    constructor Board new(int gameLevel) {
+        let level = gameLevel;
+        
+        if (level = 1) {
+            let width = 4;
+            let height = 2;
+        }
+        else {
+            if (level = 2) {
+                let width = 4;
+                let height = 3;
+            }
+            else {
+                let width = 4;
+                let height = 4;
+            }
+        }
+        
+        do initializeCards();
+        
+        return this;
+    }
+    
+    // Initialize cards based on level
+    method void initializeCards() {
+        var int size, i, j, index;
+        var Card card;
+        var Array symbols;
+        
+        let size = width * height;
+        let cards = Array.new(size);
+        
+        // Create symbol array based on level
+        if (level = 1) {
+            let symbols = Array.new(8);
+            let symbols[0] = 65; // A
+            let symbols[1] = 65; // A
+            let symbols[2] = 66; // B
+            let symbols[3] = 66; // B
+            let symbols[4] = 67; // C
+            let symbols[5] = 67; // C
+            let symbols[6] = 68; // D
+            let symbols[7] = 68; // D
+        }
+        else {
+            if (level = 2) {
+                let symbols = Array.new(12);
+                let symbols[0] = 65; // A
+                let symbols[1] = 65; // A
+                let symbols[2] = 66; // B
+                let symbols[3] = 66; // B
+                let symbols[4] = 67; // C
+                let symbols[5] = 67; // C
+                let symbols[6] = 68; // D
+                let symbols[7] = 68; // D
+                let symbols[8] = 69; // E
+                let symbols[9] = 69; // E
+                let symbols[10] = 70; // F
+                let symbols[11] = 70; // F
+            }
+            else {
+                let symbols = Array.new(16);
+                let symbols[0] = 65; // A
+                let symbols[1] = 65; // A
+                let symbols[2] = 66; // B
+                let symbols[3] = 66; // B
+                let symbols[4] = 67; // C
+                let symbols[5] = 67; // C
+                let symbols[6] = 68; // D
+                let symbols[7] = 68; // D
+                let symbols[8] = 69; // E
+                let symbols[9] = 69; // E
+                let symbols[10] = 70; // F
+                let symbols[11] = 70; // F
+                let symbols[12] = 71; // G
+                let symbols[13] = 71; // G
+                let symbols[14] = 72; // H
+                let symbols[15] = 72; // H
+            }
+        }
+        
+        // Shuffle symbols
+        do shuffleArray(symbols, size);
+        
+        // Create card objects with predetermined positions
+        let index = 0;
+        let i = 0;
+        while (i < height) {
+            let j = 0;
+            while (j < width) {
+                let cards[index] = Card.new(j, i, symbols[index]);
+                let index = index + 1;
+                let j = j + 1;
+            }
+            let i = i + 1;
+        }
+        
+        do symbols.dispose();
+        
+        return;
+    }
+    
+    // Shuffle an array using Fisher-Yates algorithm
+    method void shuffleArray(Array arr, int size) {
+        var int i, j, temp;
+        var int randomSeed;
+        
+        // Use current time as random seed
+        let randomSeed = 0;
+        let i = size - 1;
+        
+        while (i > 0) {
+            // Simple pseudo-random number generation
+            let randomSeed = randomSeed + 1;
+            let j = randomSeed - ((randomSeed / (i + 1)) * (i + 1)); //comment- j = randomSeed % (i + 1)
+            
+            // Swap arr[i] and arr[j]
+            let temp = arr[i];
+            let arr[i] = arr[j];
+            let arr[j] = temp;
+            
+            let i = i - 1;
+        }
+        
+        return;
+    }
+    
+    // Get board width
+    method int getWidth() {
+        return width;
+    }
+    
+    // Get board height
+    method int getHeight() {
+        return height;
+    }
+    
+    // Get card at position
+    method Card getCard(int x, int y) {
+        var int index;
+        let index = (y * width) + x;
+        return cards[index];
+    }
+    
+    // Draw the entire board
+    method void draw() {
+        var int i, size;
+        var Card card;
+        var int x, y, screenX, screenY;
+        var int cardSize;
+        
+        let size = width * height;
+        
+        // Draw grid numbers for user reference
+        let cardSize = 30;
+        
+        let i = 0;
+        while (i < size) {
+            let x = i - ((i / width) * width); // x = i % width
+            let y = i / width;
+            
+            let screenX = 50 + (x * (cardSize + 10));
+            let screenY = 50 + (y * (cardSize + 10));
+            
+            // Draw card number in corner (1-based)
+            do Output.moveCursor((screenY / 11) - 1, (screenX / 8) + 1);
+            do Output.printInt(i + 1);
+            
+            let i = i + 1;
+        }
+        
+        // Draw cards
+        let i = 0;
+        while (i < size) {
+            let card = cards[i];
+            do card.draw();
+            let i = i + 1;
+        }
+        
+        return;
+    }
+    
+    // Cleanup resources
+    method void dispose() {
+        var int i, size;
+        var Card card;
+        
+        let size = width * height;
+        
+        let i = 0;
+        while (i < size) {
+            let card = cards[i];
+            do card.dispose();
+            let i = i + 1;
+        }
+        
+        do cards.dispose();
+        do Memory.deAlloc(this);
+        
+        return;
+    }
+}

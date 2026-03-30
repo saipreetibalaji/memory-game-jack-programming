@@ -1,0 +1,327 @@
+class Game {
+    field Board board;
+    field int level;
+    field int score1;          // Score for player 1
+    field int score2;          // Score for player 2
+    field int totalPairs;
+    field boolean exit;
+    field int currentPlayer;   // 1 for player 1, 2 for player 2
+    field int firstCardIndex;  // Index of first selected card
+    field int secondCardIndex; // Index of second selected card
+    field boolean firstCardSelected;
+    
+    // Constructor
+    constructor Game new() {
+        let exit = false;
+        let score1 = 0;
+        let score2 = 0;
+        let firstCardSelected = false;
+        let currentPlayer = 1;  // Player 1 starts
+        return this;
+    }
+    
+    // Main game loop
+    method void run() {
+    do Screen.clearScreen();
+    
+    // Debug message
+    do Output.moveCursor(0, 0);
+    do Output.printString("Entering game - press a key");
+    
+    do selectLevel();
+    
+    // Debug message after level selection
+    do Output.moveCursor(0, 0);
+    do Output.printString("Level selected: ");
+    do Output.printInt(level);
+    do Sys.wait(1000); // Show debug for 1 second
+    
+    if (~exit) {
+        do initializeGame();
+        do playGame();
+    }
+    return;
+}
+    
+    // Select level screen
+     
+    method void selectLevel() {
+    var int key;
+    var boolean levelSelected;
+    
+    let levelSelected = false;
+    
+    do UI.drawLevelSelection();
+    
+    while (~levelSelected & ~exit) {
+        // Get current key
+        let key = Keyboard.keyPressed();
+        
+        // Process key if pressed
+        if (key = 49) { // '1' key
+            let level = 1;
+            let totalPairs = 4;
+            let levelSelected = true;
+            
+            // Wait for key release
+            while (~(Keyboard.keyPressed() = 0)) {
+                do Sys.wait(5);
+            }
+        }
+        if (key = 50) { // '2' key
+            let level = 2;
+            let totalPairs = 6;
+            let levelSelected = true;
+            
+            // Wait for key release
+            while (~(Keyboard.keyPressed() = 0)) {
+                do Sys.wait(5);
+            }
+        }
+        if (key = 51) { // '3' key
+            let level = 3;
+            let totalPairs = 8;
+            let levelSelected = true;
+            
+            // Wait for key release
+            while (~(Keyboard.keyPressed() = 0)) {
+                do Sys.wait(5);
+            }
+        }
+        if (key = 140) { // ESC key
+            let exit = true;
+            
+            // Wait for key release
+            while (~(Keyboard.keyPressed() = 0)) {
+                do Sys.wait(5);
+            }
+        }
+        
+        // Add a smaller wait time
+        do Sys.wait(5);
+    }
+    
+    return;
+}
+
+    // Initialize the game based on selected level
+    method void initializeGame() {
+        let board = Board.new(level);
+        return;
+    }
+    
+    // Convert card index to x,y coordinates
+    method void indexToCoordinates(int index, Array coords) {
+        var int width;
+        let width = board.getWidth();
+        let coords[0] = index - ((index / width) * width); // x = index % width
+        let coords[1] = index / width;                     // y = index / width
+        return;
+    }
+    
+    // Convert x,y coordinates to card index
+    method int coordinatesToIndex(int x, int y) {
+        return (y * board.getWidth()) + x;
+    }
+    
+    // Main game play loop
+    method void playGame() {
+        var int cardIndex;
+        var Card card;
+        var Array coords;
+        var int pairsFound;
+        var boolean turnEnded;
+        var char firstSymbol;
+        
+        let coords = Array.new(2); // For storing x,y coordinates
+        let pairsFound = 0;
+        
+        do Screen.clearScreen();
+        
+        while ((pairsFound < totalPairs) & (~exit)) {
+            let turnEnded = false;
+            
+            // Draw the board and UI
+            do board.draw();
+            do UI.drawTwoPlayerGameUI(score1, score2, totalPairs, currentPlayer);
+            
+            // First card selection
+            if (~firstCardSelected) {
+                do Output.moveCursor(3, 2);
+                do Output.printString("Player ");
+                do Output.printInt(currentPlayer);
+                do Output.printString(": Enter first card (1-");
+                do Output.printInt(board.getWidth() * board.getHeight());
+                do Output.printString("): ");
+                
+                let cardIndex = Input.readInt();
+                
+                // Validate input
+                if ((cardIndex > 0) & (cardIndex < (board.getWidth() * board.getHeight())) | (cardIndex = (board.getWidth() * board.getHeight()))) {
+                    let cardIndex = cardIndex - 1; // Convert to 0-based index
+                    
+                    // Convert index to coordinates
+                    do indexToCoordinates(cardIndex, coords);
+                    
+                    let card = board.getCard(coords[0], coords[1]);
+                    
+                    // Check if card is already matched
+                    if (~card.isMatched()) {
+                        do card.reveal();
+                        let firstCardSelected = true;
+                        let firstCardIndex = cardIndex;
+                        
+                        // Redraw board to show selected card
+                        do board.draw();
+                        do UI.drawTwoPlayerGameUI(score1, score2, totalPairs, currentPlayer);
+                    } else {
+                        do Output.moveCursor(4, 2);
+                        do Output.printString("Card already matched! Try again.");
+                        do Sys.wait(1000);
+                    }
+                } else {
+                    if (~exit) {
+                        do Output.moveCursor(4, 2);
+                        do Output.printString("Invalid card number! Try again.");
+                        do Sys.wait(1000);
+                    }
+                }
+            }
+            // Second card selection
+            else {
+                do Output.moveCursor(3, 2);
+                do Output.printString("Player ");
+                do Output.printInt(currentPlayer);
+                do Output.printString(": Enter second card (1-");
+                do Output.printInt(board.getWidth() * board.getHeight());
+                do Output.printString("): ");
+                
+                let cardIndex = Input.readInt();
+                
+                // Check for ESC key (exit)
+                if (exit) {
+                    let turnEnded = true;
+                } else {
+                    // Validate input
+                    if ((cardIndex > 0) & (cardIndex < (board.getWidth() * board.getHeight())) | (cardIndex = (board.getWidth() * board.getHeight()))) {
+                        let cardIndex = cardIndex - 1; // Convert to 0-based index
+                        
+                        // Can't select the same card twice
+                        if (cardIndex = firstCardIndex) {
+                            do Output.moveCursor(4, 2);
+                            do Output.printString("Can't select the same card! Try again.");
+                            do Sys.wait(1000);
+                        } else {
+                            // Convert index to coordinates
+                            do indexToCoordinates(cardIndex, coords);
+                            
+                            let card = board.getCard(coords[0], coords[1]);
+                            
+                            // Check if card is already matched
+                            if (~card.isMatched()) {
+                                let secondCardIndex = cardIndex;
+                                do card.reveal();
+                                
+                                // Redraw board to show both selected cards
+                                do board.draw();
+                                do UI.drawTwoPlayerGameUI(score1, score2, totalPairs, currentPlayer);
+                                
+                                do Sys.wait(1000); // Show cards briefly
+                                
+                                // Check if cards match
+                                do indexToCoordinates(firstCardIndex, coords);
+                                let card = board.getCard(coords[0], coords[1]);
+                                let firstSymbol = card.getSymbol();
+                                
+                                do indexToCoordinates(secondCardIndex, coords);
+                                let card = board.getCard(coords[0], coords[1]);
+                                
+                                if (card.getSymbol() = firstSymbol) {
+                                    // Cards match
+                                    do indexToCoordinates(firstCardIndex, coords);
+                                    let card = board.getCard(coords[0], coords[1]);
+                                    do card.setMatched(true);
+                                    
+                                    do indexToCoordinates(secondCardIndex, coords);
+                                    let card = board.getCard(coords[0], coords[1]);
+                                    do card.setMatched(true);
+                                    
+                                    // Update score for current player
+                                    if (currentPlayer = 1) {
+                                        let score1 = score1 + 1;
+                                    } else {
+                                        let score2 = score2 + 1;
+                                    }
+                                    
+                                    let pairsFound = pairsFound + 1;
+                                    
+                                    do Output.moveCursor(4, 2);
+                                    do Output.printString("Match found! Player ");
+                                    do Output.printInt(currentPlayer);
+                                    do Output.printString(" gets a point!");
+                                    do Sys.wait(1000);
+                                } else {
+                                    // Cards don't match, hide them
+                                    do indexToCoordinates(firstCardIndex, coords);
+                                    let card = board.getCard(coords[0], coords[1]);
+                                    do card.hide();
+                                    
+                                    do indexToCoordinates(secondCardIndex, coords);
+                                    let card = board.getCard(coords[0], coords[1]);
+                                    do card.hide();
+                                    
+                                    do Output.moveCursor(4, 2);
+                                    do Output.printString("No match! Next player's turn.");
+                                    do Sys.wait(1000);
+                                }
+                                
+                                let firstCardSelected = false;
+                                let turnEnded = true;
+                                
+                                // Switch players
+                                if (currentPlayer = 1) {
+                                    let currentPlayer = 2;
+                                } else {
+                                    let currentPlayer = 1;
+                                }
+                            } else {
+                                do Output.moveCursor(4, 2);
+                                do Output.printString("Card already matched! Try again.");
+                                do Sys.wait(1000);
+                            }
+                        }
+                    } else {
+                        do Output.moveCursor(4, 2);
+                        do Output.printString("Invalid card number! Try again.");
+                        do Sys.wait(1000);
+                    }
+                }
+            }
+            
+            // Check for ESC key to exit game
+            if (Keyboard.keyPressed() = 140) {
+                let exit = true;
+            }
+            
+            do Screen.clearScreen();
+        }
+        
+        if (pairsFound = totalPairs) {
+            do UI.drawGameOverScreen(score1, score2);
+            // Wait for any key
+            do Input.waitForAnyKey();
+        }
+        
+        do coords.dispose();
+        return;
+    }
+    
+    // Cleanup resources
+    method void dispose() {
+        if (~(board = null)) {
+            do board.dispose();
+        }
+        do Memory.deAlloc(this);
+        return;
+    }
+}

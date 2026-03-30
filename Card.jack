@@ -1,0 +1,81 @@
+class Card {
+    field char symbol;
+    field int x, y;
+    field boolean revealed;
+    field boolean matched;
+    field int size;
+    
+    // Constructor
+    constructor Card new(int Ax, int Ay, char Asymbol) {
+        let x = Ax;
+        let y = Ay;
+        let symbol = Asymbol;
+        let revealed = false;
+        let matched = false;
+        let size = 30; // Card size is 30x30 pixels
+        return this;
+    }
+    
+    // Get card's symbol
+    method char getSymbol() {
+        return symbol;
+    }
+    
+    // Check if card is revealed
+    method boolean isRevealed() {
+        return revealed;
+    }
+    
+    // Check if card is matched
+    method boolean isMatched() {
+        return matched;
+    }
+    
+    // Set matched status
+    method void setMatched(boolean value) {
+        let matched = value;
+        return;
+    }
+    
+    // Reveal the card
+    method void reveal() {
+        let revealed = true;
+        return;
+    }
+    
+    // Hide the card
+    method void hide() {
+        let revealed = false;
+        return;
+    }
+    
+    // Draw card at its position
+    method void draw() {
+        var int screenX, screenY;
+        
+        // Convert grid position to screen coordinates (add margins)
+        let screenX = 50 + (x * (size + 10));
+        let screenY = 50 + (y * (size + 10));
+        
+        // Draw card outline
+        do Screen.setColor(true);
+        do Screen.drawRectangle(screenX, screenY, screenX + size, screenY + size);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(screenX + 1, screenY + 1, screenX + size - 1, screenY + size - 1);
+        
+        // Draw symbol if revealed or matched
+        if (revealed | matched) {
+            do Screen.setColor(true);
+            do Output.moveCursor(screenY / 11 + 1, screenX / 8 + 1);
+            do Output.printChar(symbol);
+        }
+        
+        return;
+    }
+    
+    // Cleanup resources
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}

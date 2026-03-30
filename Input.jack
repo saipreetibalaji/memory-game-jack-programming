@@ -1,0 +1,95 @@
+class Input {
+    // Read an integer from keyboard input
+    function int readInt() {
+        var String inputStr;
+        var int value;
+        var char key;
+        var boolean done;
+        
+        let inputStr = String.new(5); // Max 5 digits
+        let done = false;
+        
+        while (~done) {
+            let key = Keyboard.keyPressed();
+            
+            // Enter key - finish input
+            if (key = 128) {
+                let done = true;
+                
+                // Wait for key release
+                while (~(Keyboard.keyPressed() = 0)) {
+                    do Sys.wait(10);
+                }
+            }
+            // Backspace - delete last character
+            else {
+                if (key = 129) {
+                    if (inputStr.length() > 0) {
+                        do inputStr.eraseLastChar();
+                        do Output.backSpace();
+                    }
+                    
+                    // Wait for key release
+                    while (Keyboard.keyPressed() = 129) {
+                        do Sys.wait(10);
+                    }
+                }
+                // ESC key - exit game
+                else {
+                    if (key = 140) {
+                        return -1; // Special return value for ESC
+                    }
+                    // Number keys (0-9)
+                    else {
+                        if ((key > 47) & (key < 58)) {
+                            do inputStr.appendChar(key);
+                            do Output.printChar(key);
+                            
+                            // Wait for key release
+                            while (Keyboard.keyPressed() = key) {
+                                do Sys.wait(10);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            do Sys.wait(10);
+        }
+        
+        // Convert string to integer
+        let value = inputStr.intValue();
+        do inputStr.dispose();
+        
+        return value;
+    }
+    
+    // Check if a specific key is pressed
+    function boolean isKeyPressed(int keyCode) {
+        return (Keyboard.keyPressed() = keyCode);
+    }
+    
+    // Wait for any key press and release
+    function void waitForAnyKey() {
+        // Wait for a key to be pressed
+        while (Keyboard.keyPressed() = 0) {
+            do Sys.wait(10);
+        }
+        
+        // Wait for the key to be released
+        while (~(Keyboard.keyPressed() = 0)) {
+            do Sys.wait(10);
+        }
+        
+        return;
+    }
+    
+    // Wait for a specific key press
+    function void waitForKey(int keyCode) {
+        while (~(Keyboard.keyPressed() = keyCode)) {
+            do Sys.wait(10);
+        }
+        
+        return;
+    }
+}
